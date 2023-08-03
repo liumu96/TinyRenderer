@@ -11,40 +11,50 @@ Model::Model(const char *filename) : verts_(), faces_()
 {
     std::ifstream in;
     in.open(filename, std::ifstream::in);
-    std::cout << filename << std::endl;
+
     if (in.fail())
         return;
+
     std::string line;
-    std::cout << filename << in.fail() << std::endl;
     while (!in.eof())
     {
         std::getline(in, line);
         std::istringstream iss(line.c_str());
         char trash;
+        int itrash;
+        std::string strash;
         if (!line.compare(0, 2, "v "))
         {
             iss >> trash;
             Vec3f v;
             for (int i = 0; i < 3; i++)
-            {
-                iss >> v.raw[i];
-            }
+                iss >> v[i];
+
             verts_.push_back(v);
+        }
+        else if (!line.compare(0, 2, "vt"))
+        {
+            iss >> strash;
+            Vec2f uv;
+            for (int i = 0; i < 2; i++)
+                iss >> uv[i];
+            uvs_.push_back(uv);
         }
         else if (!line.compare(0, 2, "f "))
         {
-            std::vector<int> f;
-            int itrash, idx;
+            std::vector<std::pair<int, int>> f;
             iss >> trash;
-            while (iss >> idx >> trash >> itrash >> trash >> itrash)
+            int vt, idx;
+            while (iss >> idx >> trash >> vt >> trash >> itrash)
             {
                 idx--;
-                f.push_back(idx);
+                vt--;
+                f.emplace_back(idx, vt);
             }
             faces_.push_back(f);
         }
     }
-    std::cerr << "# v# " << verts_.size() << " f# " << faces_.size() << std::endl;
+    std::cerr << "# v# " << verts_.size() << "# vt# " << uvs_.size() << " f# " << faces_.size() << std::endl;
 }
 
 Model::~Model() {}
@@ -59,7 +69,7 @@ int Model::nfaces()
     return (int)faces_.size();
 }
 
-std::vector<int> Model::face(int idx)
+std::vector<std::pair<int, int>> Model::face(int idx)
 {
     return faces_[idx];
 }
@@ -67,4 +77,9 @@ std::vector<int> Model::face(int idx)
 Vec3f Model::vert(int i)
 {
     return verts_[i];
+}
+
+Vec2f Model::uv(int i)
+{
+    return uvs_[i];
 }
