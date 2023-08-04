@@ -2,11 +2,11 @@
 
 This is a repository to implement a tiny renderer followed by the [tutorial](https://github.com/ssloy/tinyrenderer/wiki)
 
-### Lesson 4: Perspective projection
+### Lesson 5: Moving the camera
 
-[tutorial](<https://github.com/ssloy/tinyrenderer/wiki/Lesson-4:-Perspective-projection)
+[tutorial](<https://github.com/ssloy/tinyrenderer/wiki/Lesson-5:-Moving-the-camera)
 
-branch: Lesson4
+branch: Lesson5
 
 ```
 mkdir build && cd build && cmake ..
@@ -14,16 +14,16 @@ make && ./tinyrenderer && convert output.tga output.png && convert zbuffer.tga z
 ```
 
 Output:
-prospective projection : before VS after
+prospective projection : flat & goraund & cartoon
 
 <center class="half">
-    <img src="./results/texture.png" width="400"/>
+    <img src="./results/Flat.png" width="400"/>
     <space>
     <img src="./results/output.png" width="400"/>
+    <space>
+    <img src="./results/Cartoon.png" width="400"/>
 </center>
-zbuffer-gray :  before VS after
+zbuffer-gray 
 <center class="half">
     <img src="./results/zbuffer.png" width="400"/>
-    <space>
-    <img src="./results/zbuffer-pro.png" width="400"/>
 </center>
