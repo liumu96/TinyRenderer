@@ -67,19 +67,6 @@ struct TGAColor
 		}
 		return *this;
 	}
-
-	TGAColor operator*(float intensity) const
-	{
-		TGAColor res = *this;
-		intensity = (intensity > 1.f ? 1.f : (intensity < 0.f ? 0.f : intensity));
-		res.b *= intensity;
-		res.g *= intensity;
-		res.r *= intensity;
-		res.a *= intensity;
-		// for (int i = 0; i < 4; i++)
-		// 	res.bgra[i] = bgra[i] * intensity;
-		return res;
-	}
 };
 
 class TGAImage
