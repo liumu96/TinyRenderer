@@ -16,82 +16,37 @@ Vec3f eye(1, 1, 3);
 Vec3f center(0, 0, 0);
 Vec3f up(0, 1, 0);
 
-struct GoraudShader : public IShader
+struct Shader : public IShader
 {
     Vec3f varying_intensity;
-
-    virtual ~GoraudShader() {}
+    mat<2, 3, float> varying_uv;
+    mat<4, 4, float> uniform_M;   //  Projection*ModelView
+    mat<4, 4, float> uniform_MIT; // (Projection*ModelView).invert_transpose()
 
     virtual Vec3i vertex(int iface, int nthvert)
     {
+        varying_uv.set_col(nthvert, model->uv(iface, nthvert));
+        // varying_intensity[nthvert] = CLAMP(model->normal(iface, nthvert) * light_dir, 0.f, 1.f);
         Vec4f gl_Vertex = embed<4>(model->vert(iface, nthvert));
         gl_Vertex = Viewport * Projection * ModelView * gl_Vertex;
-
-        varying_intensity[nthvert] = CLAMP(model->normal(iface, nthvert) * light_dir, 0.f, 1.f);
         return proj<3>(gl_Vertex / gl_Vertex[3]);
     }
 
     virtual bool fragment(Vec3f bar, TGAColor &color)
     {
-        float intensity = varying_intensity * bar;
-        color = TGAColor(255, 255, 255) * intensity;
-        return false;
-    }
-};
-
-struct ToonShader : public IShader
-{
-    Vec3f varying_ity;
-
-    virtual ~ToonShader() {}
-
-    virtual Vec3i vertex(int iface, int nthvert)
-    {
-        Vec4f gl_Vertex = embed<4>(model->vert(iface, nthvert));
-        gl_Vertex = Viewport * Projection * ModelView * gl_Vertex;
-        varying_ity[nthvert] = CLAMP(model->normal(iface, nthvert) * light_dir, 0.f, 1.f);
-
-        return proj<3>(gl_Vertex / gl_Vertex[3]);
-    }
-
-    virtual bool fragment(Vec3f bar, TGAColor &color)
-    {
-        float intensity = varying_ity * bar;
-        if (intensity > .85)
-            intensity = 1;
-        else if (intensity > .60)
-            intensity = .80;
-        else if (intensity > .45)
-            intensity = .60;
-        else if (intensity > .30)
-            intensity = .45;
-        else if (intensity > .15)
-            intensity = .30;
-        color = TGAColor(255, 155, 0) * intensity;
-        return false;
-    }
-};
-
-struct FlatShader : public IShader
-{
-    mat<3, 3, float> varying_tri;
-
-    virtual ~FlatShader() {}
-
-    virtual Vec3i vertex(int iface, int nthvert)
-    {
-        Vec4f gl_Vertex = embed<4>(model->vert(iface, nthvert));
-        gl_Vertex = Projection * ModelView * gl_Vertex;
-        varying_tri.set_col(nthvert, proj<3>(gl_Vertex / gl_Vertex[3]));
-        gl_Vertex = Viewport * gl_Vertex;
-        return proj<3>(gl_Vertex / gl_Vertex[3]);
-    }
-
-    virtual bool fragment(Vec3f bar, TGAColor &color)
-    {
-        Vec3f n = cross(varying_tri.col(1) - varying_tri.col(0), varying_tri.col(2) - varying_tri.col(0)).normalize();
-        float intensity = CLAMP(n * light_dir, 0.f, 1.f);
-        color = TGAColor(255, 255, 255) * intensity;
+        // float intensity = varying_intensity * bar;
+        Vec2f uv = varying_uv * bar;
+        Vec3f n = proj<3>(uniform_MIT * embed<4>(model->normal(uv))).normalize();
+        Vec3f l = proj<3>(uniform_M * embed<4>(light_dir)).normalize();
+        Vec3f r = (n * (n * l * 2.f) - l).normalize(); // reflected light
+        float spec = pow(std::max(r.z, 0.0f), model->specular(uv));
+        float diff = std::max(0.f, n * l);
+        TGAColor c = model->diffuse(uv);
+        color = c;
+        for (int i = 0; i < 3; i++)
+            color[i] = std::min<float>(5 + c[i] * (diff + .6 * spec), 255);
+        // float intensity = CLAMP(n * l, 0.f, 1.f);
+        // color = model->diffuse(uv) * intensity;
         return false;
     }
 };
@@ -116,9 +71,9 @@ int main(int argc, char **argv)
     TGAImage image(width, height, TGAImage::RGB);
     TGAImage zbuffer(width, height, TGAImage::GRAYSCALE);
 
-    GoraudShader shader;
-    // ToonShader shader;
-    // FlatShader shader;
+    Shader shader;
+    shader.uniform_M = Projection * ModelView;
+    shader.uniform_MIT = (Projection * ModelView).invert_transpose();
     for (int i = 0; i < model->nfaces(); i++)
     {
         Vec3i screen_coords[3];
