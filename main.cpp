@@ -25,7 +25,7 @@ struct GoraudShader : public IShader
     virtual Vec3i vertex(int iface, int nthvert)
     {
         Vec4f gl_Vertex = embed<4>(model->vert(iface, nthvert));
-        gl_Vertex = Projection * ModelView * gl_Vertex;
+        gl_Vertex = Viewport * Projection * ModelView * gl_Vertex;
 
         varying_intensity[nthvert] = CLAMP(model->normal(iface, nthvert) * light_dir, 0.f, 1.f);
         return proj<3>(gl_Vertex / gl_Vertex[3]);
@@ -116,9 +116,9 @@ int main(int argc, char **argv)
     TGAImage image(width, height, TGAImage::RGB);
     TGAImage zbuffer(width, height, TGAImage::GRAYSCALE);
 
-    // GoraudShader shader;
+    GoraudShader shader;
     // ToonShader shader;
-    FlatShader shader;
+    // FlatShader shader;
     for (int i = 0; i < model->nfaces(); i++)
     {
         Vec3i screen_coords[3];
