@@ -2,28 +2,26 @@
 
 This is a repository to implement a tiny renderer followed by the [tutorial](https://github.com/ssloy/tinyrenderer/wiki)
 
-### Lesson 6: Shaders for the software renderer
+### Lesson 7: Shadow mapping
 
-[tutorial](<https://github.com/ssloy/tinyrenderer/wiki/Lesson-6:-Shaders-for-the-software-renderer)
+[tutorial](<https://github.com/ssloy/tinyrenderer/wiki/Lesson-7:-Shadow-mapping)
 
-branch: Lesson6
+branch: Lesson7
 
 ```
 mkdir build && cd build && cmake ..
-make && ./tinyrenderer && convert output.tga output.png && convert zbuffer.tga zbuffer.png
+make && ./tinyrenderer && convert framebuffer.tga framebuffer.png && convert depth.tga depth.png
 ```
 
 Output:
-shaders with texture : diffuse & norm & spec
+shadow mapping : before & after
 
 <center class="half">
-    <img src="./results/texture_diffuse.png" width="400"/>
-    <space>
-    <img src="./results/texture_norm.png" width="400"/>
-    <space>
     <img src="./results/texture_spec.png" width="400"/>
+    <space>
+    <img src="./results/framebuffer.png" width="400"/>
 </center>
-zbuffer-gray 
+depth
 <center class="half">
-    <img src="./results/zbuffer.png" width="400"/>
+    <img src="./results/depth.png" width="400"/>
 </center>
